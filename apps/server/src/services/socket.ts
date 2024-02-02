@@ -1,12 +1,13 @@
 import { Server } from "socket.io";
 import { Redis } from "ioredis";
+import { produceMessage } from "./producer";
 
 //two connections needed one for publishing and 1 for subscribing
 const pub = new Redis({
   host: "",
   port: 0,
   username: "",
-  password: "AVNS_eZiF7hrP3RbWTBFpdaY",
+  password: "",
 });
 const sub = new Redis({
   host: "",
@@ -39,10 +40,13 @@ class SocketService {
         await pub.publish("MESSAGES", JSON.stringify({ message }));
       });
     });
-    sub.on("message", (channel, message) => {
+    sub.on("message", async (channel, message) => {
       if (channel === "MESSAGES") {
-        console.log("this is the message recieved", message);
+        console.log("this is the message recieved from redis", message);
         io.emit("message", message);
+        //DB store
+        await produceMessage("MESSAGE", message);
+        console.log("message produced to kafka broker");
       }
     });
   }

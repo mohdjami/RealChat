@@ -8,11 +8,17 @@
     "dev": "npx tsc-watch --onSuccess \"node dist/index.js\""
   },
   "devDependencies": {
+    "prisma": "^5.9.0",
     "tsc-watch": "^6.0.4",
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@prisma/client": "^5.9.0",
+    "@types/node": "^20.11.15",
     "ioredis": "^5.3.2",
-    "socket.io": "^4.7.2"
+    "kafkajs": "^2.2.4",
+    "socket.io": "^4.7.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
