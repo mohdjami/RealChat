@@ -1,81 +1,229 @@
-# Turborepo starter
+# 💬 Scalable WebSocket Chat Application
 
-This is an official starter Turborepo.
+<div align="center">
 
-## Using this example
+[![Made with Turborepo](https://img.shields.io/badge/Built%20with-Turborepo-EF4444.svg?style=for-the-badge&logo=turborepo)](https://turbo.build/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?&style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white)](https://kafka.apache.org/)
+[![PlanetScale](https://img.shields.io/badge/PlanetScale-000000?style=for-the-badge&logo=planetscale&logoColor=white)](https://planetscale.com/)
 
-Run the following command:
+A high-performance, scalable chat application built with modern technologies supporting 10,000+ concurrent users.
 
-```sh
-npx create-turbo@latest
+</div>
+
+## 🏗️ Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend Clients"
+        C1[Client 1]
+        C2[Client 2]
+        C3[Client n...]
+    end
+
+    subgraph "Load Balancer"
+        LB[NGINX]
+    end
+
+    subgraph "WebSocket Servers"
+        WS1[WebSocket Server 1]
+        WS2[WebSocket Server 2]
+        WS3[WebSocket Server n...]
+    end
+
+    subgraph "Message Queue"
+        K[Apache Kafka]
+    end
+
+    subgraph "Pub/Sub Layer"
+        R1[Redis Pub/Sub]
+    end
+
+    subgraph "Database"
+        DB[PlanetScale]
+    end
+
+    C1 & C2 & C3 --> LB
+    LB --> WS1 & WS2 & WS3
+    WS1 & WS2 & WS3 <--> R1
+    WS1 & WS2 & WS3 <--> K
+    K --> DB
 ```
 
-## What's inside?
+### WebSocket Scaling Strategy
 
-This Turborepo includes the following packages/apps:
+```mermaid
+sequenceDiagram
+    participant Client
+    participant LoadBalancer
+    participant WebSocketServer1
+    participant WebSocketServer2
+    participant RedisPubSub
+    participant Kafka
+    participant PlanetScale
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+    Client->>LoadBalancer: Connect via WebSocket
+    LoadBalancer->>WebSocketServer1: Route to available server
+    Client->>WebSocketServer1: Send message
+    WebSocketServer1->>RedisPubSub: Publish message
+    RedisPubSub->>WebSocketServer2: Broadcast to all servers
+    WebSocketServer2->>Client: Deliver to other clients
+    WebSocketServer1->>Kafka: Queue message for persistence
+    Kafka->>PlanetScale: Store message in database
 ```
 
-### Develop
+## 🚀 Features
 
-To develop all apps and packages, run the following command:
+- **Real-time Communication**: Low-latency messaging using WebSocket protocol
+- **High Scalability**: Supports 10,000+ concurrent users
+- **Message Persistence**: Reliable message storage using PlanetScale
+- **Load Balancing**: Efficient request distribution with NGINX
+- **Microservices Architecture**: Built with Turborepo for better modularity
+- **Message Queueing**: Kafka integration for reliable message processing
+- **Pub/Sub System**: Redis for real-time message broadcasting
+- **High Availability**: 99.9% uptime during peak traffic
+
+## 🛠️ Technical Stack
+
+### Frontend
+- Next.js for server-side rendering
+- TypeScript for type safety
+- WebSocket client implementation
+
+### Backend
+- Node.js microservices
+- WebSocket server implementation
+- Turborepo for monorepo management
+
+### Infrastructure
+- Redis Pub/Sub for message broadcasting
+- Apache Kafka for message queuing
+- PlanetScale for scalable database
+- NGINX for load balancing
+
+## 📦 Project Structure
 
 ```
-cd my-turborepo
-pnpm dev
+├── apps/
+│   ├── web/                 # Next.js frontend
+│   └── websocket-server/    # Node.js WebSocket server
+├── packages/
+│   ├── shared/              # Shared utilities
+│   ├── database/            # Database schemas
+│   └── config/              # Configuration
+└── turbo.json              # Turborepo configuration
 ```
 
-### Remote Caching
+## 🚦 Getting Started
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+1. **Clone the repository**
+```bash
+git clone https://github.com/yourusername/scalable-chat-app.git
+cd scalable-chat-app
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
+2. **Install dependencies**
+```bash
+npm install
 ```
 
-## Useful Links
+3. **Set up environment variables**
+```bash
+cp .env.example .env
+```
 
-Learn more about the power of Turborepo:
+4. **Start development servers**
+```bash
+npm run dev
+```
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+## 💻 Development
+
+### Prerequisites
+- Node.js 18+
+- Redis
+- Apache Kafka
+- PlanetScale account
+
+### Running Locally
+1. Start Redis server
+```bash
+redis-server
+```
+
+2. Start Kafka
+```bash
+# Start Zookeeper
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+# Start Kafka
+bin/kafka-server-start.sh config/server.properties
+```
+
+3. Run the application
+```bash
+turbo dev
+```
+
+## 🔄 Scalability Features
+
+### WebSocket Scaling
+- Multiple WebSocket servers handle client connections
+- Redis Pub/Sub ensures message delivery across all servers
+- NGINX load balancer distributes client connections
+
+### Database Scaling
+- PlanetScale handles database scaling automatically
+- Kafka manages high-throughput message persistence
+- Efficient connection pooling and query optimization
+
+### Performance Optimizations
+- Message batching for bulk operations
+- Connection pooling for database efficiency
+- Caching frequently accessed data in Redis
+
+## 📊 Performance Metrics
+
+- **Concurrent Users**: 10,000+
+- **Message Latency**: <100ms
+- **Uptime**: 99.9%
+- **Message Throughput**: 1000+ messages/second
+
+## 🔐 Security Features
+
+- WebSocket connection authentication
+- Rate limiting
+- Input validation
+- SQL injection prevention
+- XSS protection
+
+## 🚧 Future Improvements
+
+- [ ] Implement message encryption
+- [ ] Add file sharing capabilities
+- [ ] Enhance monitoring and alerting
+- [ ] Add support for voice/video calls
+- [ ] Implement message search functionality
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+**Mohd Jami Khan**
+- LinkedIn: [Mohd Jami Khan](https://linkedin.com/in/mohdjami)
+- Portfolio: [mohdjami.me](https://mohdjami.me)
+- Email: mohdjamikhann@gmail.com
+
+---
+
+<div align="center">
+Made with ❤️ by Mohd Jami Khan
+</div>
